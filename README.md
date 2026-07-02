@@ -359,4 +359,4 @@ MIT License
 
 ## 项目背景
 
-本项目源于 AI 产品运营实习生岗位 MRD 面试方案。
+产品架构高度借鉴 [claw-code](https://github.com/claw-code/claw-code)（Claude Code 的 Rust clean-room 重写，MIT 协议）。
