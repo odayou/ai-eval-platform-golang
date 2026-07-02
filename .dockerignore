@@ -1,0 +1,22 @@
+# AI Eval Platform — Docker 构建忽略
+.git
+.gitignore
+.gitattributes
+.github
+*.md
+docs/
+mrd/
+scripts/
+node_modules
+web/node_modules
+web/src
+web/.vscode
+web/tsconfig*.json
+web/package-lock.json
+web/public
+data/
+*.exe
+*.log
+coverage*
+__debug_bin*
+nul

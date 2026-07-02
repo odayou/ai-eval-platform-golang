@@ -1,0 +1,6 @@
+# 测试二进制
+*.test
+*.test.exe
+# 测试缓存
+*.out
+__debug_bin*

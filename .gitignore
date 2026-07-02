@@ -1,0 +1,81 @@
+# ─────────────────────────────────────────────
+# AI Eval Platform .gitignore
+# ─────────────────────────────────────────────
+
+# ── 敏感信息 / 个人数据(绝不入库)──
+.env
+.env.*
+.env.local
+*.secret
+*.secrets
+secrets/
+*.pem
+*.key
+# 私有配置(本地实测用)
+config/local*
+**/credentials*
+
+# ── 数据库与运行时数据(含真实评测数据)──
+data/
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# ── 日志(含调试/评测过程日志)──
+*.log
+logs/
+*.out
+
+# ── Go 编译产物 ──
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+/server
+/cmd/server/server
+cmd/server
+eval-cli
+eval-cli.exe
+mock-agent
+mock-agent.exe
+server.exe
+bin/
+__debug_bin*
+
+# ── Go 测试 / 覆盖率 ──
+*.test
+*.test.exe
+coverage.txt
+coverage.html
+
+# ── 前端 (web/) ──
+web/node_modules/
+web/dist/
+web/.vite/
+web/*.log
+web/npm-debug.log*
+web/yarn-error.log*
+web/.env
+
+# ── IDE / 编辑器 ──
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.sublime-*
+
+# ── 操作系统 ──
+.DS_Store
+Thumbs.db
+desktop.ini
+nul
+
+# ── 其他运行时产物 ──
+tmp/
+.cache/
+*.pid

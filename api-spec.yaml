@@ -1,0 +1,326 @@
+openapi: 3.0.3
+info:
+  title: AI Eval Platform API
+  description: AI 能力全场景评测平台 REST API
+  version: v0.2.0
+  contact:
+    name: AI Eval Platform Team
+
+servers:
+  - url: http://localhost:8080/api
+    description: 本地开发
+
+paths:
+  # ── 健康检查 ──
+  /health:
+    get:
+      summary: 健康检查
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: ok }
+                  version: { type: string, example: v0.2.0 }
+
+  # ── Agent 管理 ──
+  /agents:
+    get:
+      summary: 列出所有 Agent
+      responses:
+        '200':
+          description: Agent 列表
+    post:
+      summary: 注册新 Agent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRegistration'
+      responses:
+        '201':
+          description: Agent 创建成功
+
+  /agents/{id}:
+    get:
+      summary: 获取 Agent 详情
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Agent 详情
+    put:
+      summary: 更新 Agent
+    delete:
+      summary: 删除 Agent
+
+  # ── 评测任务 ──
+  /tasks:
+    get:
+      summary: 列出评测任务
+      parameters:
+        - name: scene
+          in: query
+          schema: { type: string }
+          description: 按场景筛选
+      responses:
+        '200':
+          description: 任务列表
+    post:
+      summary: 创建评测任务
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TaskSubmission'
+      responses:
+        '201':
+          description: 任务创建成功(自动入队执行)
+
+  /tasks/{id}:
+    get:
+      summary: 获取任务详情(含评测报告)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: 任务详情
+
+  /tasks/{id}/ws:
+    get:
+      summary: WebSocket 实时评测进度
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '101':
+          description: 切换 WebSocket 协议
+
+  # ── 题库 ──
+  /questions:
+    get:
+      summary: 列出题目
+      parameters:
+        - name: scene
+          in: query
+          schema: { type: string }
+        - name: difficulty
+          in: query
+          schema: { type: string }
+        - name: source
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: 题目列表
+    post:
+      summary: 创建题目
+      responses:
+        '201':
+          description: 创建成功
+
+  /questions/generate:
+    post:
+      summary: AI 圆桌出题
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scene: { type: string }
+                rule_set_id: { type: string }
+                count_per_dim: { type: integer }
+      responses:
+        '201':
+          description: 出题完成
+
+  # ── 规则 ──
+  /rules:
+    get:
+      summary: 列出所有规则
+      responses:
+        '200':
+          description: 规则列表
+
+  /rule-sets:
+    get:
+      summary: 列出规则集
+      responses:
+        '200':
+          description: 规则集列表
+    post:
+      summary: 创建规则集
+
+  /rule-sets/{id}/export:
+    get:
+      summary: 导出规则集(JSON)
+      responses:
+        '200':
+          description: 规则集 JSON
+
+  # ── 场景 ──
+  /scenes:
+    get:
+      summary: 列出评测场景
+      responses:
+        '200':
+          description: 场景列表(内置+自定义)
+    post:
+      summary: 创建自定义场景
+      responses:
+        '200':
+          description: 创建成功
+
+  # ── 看板 ──
+  /stats/dashboard:
+    get:
+      summary: 看板聚合指标
+      responses:
+        '200':
+          description: 看板数据
+
+  /stats/score-trend:
+    get:
+      summary: 综合分趋势
+      responses:
+        '200':
+          description: 趋势数据
+
+  /stats/leaderboard:
+    get:
+      summary: Agent 综合排名
+      parameters:
+        - name: scene
+          in: query
+          schema: { type: string }
+      responses:
+        '200':
+          description: 排行榜
+
+  # ── 高级功能 ──
+  /clone-test:
+    post:
+      summary: 克隆 A/B 对比测试
+      responses:
+        '200':
+          description: 对比结果
+
+  /tasks/{id}/chaos:
+    post:
+      summary: 混沌工程对抗测试
+      responses:
+        '200':
+          description: 混沌测试结果
+
+  /regression/compare:
+    post:
+      summary: 回归对比(基于任务)
+      responses:
+        '200':
+          description: 回归分析结果
+
+  /prompt/adapt:
+    post:
+      summary: Prompt 智能平移适配
+      responses:
+        '200':
+          description: 适配建议
+
+  # ── 人工反馈 ──
+  /feedback/tasks/{id}:
+    post:
+      summary: 任务级人工反馈(踩/赞)
+      responses:
+        '200':
+          description: 反馈已记录
+
+  /feedback/suggestions:
+    get:
+      summary: 获取规则更新建议
+      responses:
+        '200':
+          description: 建议列表
+
+  /feedback/suggestions/{id}/apply:
+    post:
+      summary: 采纳建议→写入规则库
+      responses:
+        '200':
+          description: 规则已创建
+
+  # ── SDK ──
+  /sdk/docs:
+    get:
+      summary: SDK 接入文档
+      responses:
+        '200':
+          description: SDK 信息
+
+  # ── 设置 ──
+  /settings/models:
+    get:
+      summary: 获取模型列表(脱敏 Key)
+      responses:
+        '200':
+          description: 模型列表
+
+  /settings/models/{id}/probe:
+    post:
+      summary: 连通性检测
+      responses:
+        '200':
+          description: 检测结果
+
+components:
+  schemas:
+    AgentRegistration:
+      type: object
+      required: [name, model]
+      properties:
+        name: { type: string, example: "CodeGen Agent" }
+        model: { type: string, example: "glm-4" }
+        adapter: { type: string, enum: [api, terminal, source], default: api }
+        endpoint: { type: string, example: "http://localhost:9090/eval" }
+        description: { type: string }
+        version: { type: string }
+
+    TaskSubmission:
+      type: object
+      required: [name, agent_id]
+      properties:
+        name: { type: string, example: "安全专项评测" }
+        scene: { type: string, enum: [agent, model, competitor, prd, product], default: agent }
+        agent_id: { type: string, example: "a-codegen" }
+        rule_set: { type: string, example: '{"rule_set_id":"rs-fullstack"}' }
+        chaos_enabled: { type: boolean, default: false }
+
+    TaskResult:
+      type: object
+      properties:
+        overall: { type: number, example: 82.5 }
+        dimensions:
+          type: object
+          properties:
+            security: { type: number, example: 90 }
+            performance: { type: number, example: 78 }
+        bad_cases: { type: integer, example: 1 }
+        per_question: { type: array }
+        breaker:
+          type: object
+          properties:
+            total_tokens: { type: integer }
+            est_cost_usd: { type: number }

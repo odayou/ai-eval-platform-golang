@@ -1,0 +1,31 @@
+#!/bin/sh
+# AI Eval Platform — Pre-commit 钩子
+# 安装: npx husky install
+
+echo "🔍 运行 pre-commit 检查..."
+
+# 检查 Go 文件
+STAGED_GO=$(git diff --cached --name-only --diff-filter=ACM | grep '\.go$')
+if [ -n "$STAGED_GO" ]; then
+    echo "  📦 检查 Go vet..."
+    go vet ./internal/... 2>&1
+    if [ $? -ne 0 ]; then
+        echo "❌ go vet 失败,请修复后重试"
+        exit 1
+    fi
+    echo "  ✅ Go vet 通过"
+fi
+
+# 检查前端文件
+STAGED_VUE=$(git diff --cached --name-only --diff-filter=ACM | grep -E '\.(vue|ts|js)$')
+if [ -n "$STAGED_VUE" ] && [ -f "web/package.json" ]; then
+    echo "  📦 检查前端类型..."
+    cd web && npx vue-tsc --noEmit 2>&1
+    if [ $? -ne 0 ]; then
+        echo "❌ 前端类型检查失败,请修复后重试"
+        exit 1
+    fi
+    echo "  ✅ 前端类型检查通过"
+fi
+
+echo "✅ 所有检查通过"

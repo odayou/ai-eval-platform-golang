@@ -1,0 +1,41 @@
+version: '3.8'
+
+# AI Eval Platform — Docker Compose 一键部署
+#
+# 用法:
+#   docker compose up -d         # 启动(后台)
+#   docker compose logs -f       # 查看日志
+#   docker compose down          # 停止
+#
+# 访问: http://localhost:8080
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - eval-data:/app/data
+    environment:
+      - PORT=8080
+      - DB_PATH=/app/data/eval.db
+      - GIN_MODE=release
+      - DOCKER_ENABLED=false
+      # 如需 Docker 沙箱,设为 true 并挂载 docker socket:
+      # - DOCKER_ENABLED=true
+      # - DOCKER_HOST=unix:///var/run/docker.sock
+    # 如需 Docker 沙箱,取消注释:
+    # volumes:
+    #   - eval-data:/app/data
+    #   - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  eval-data:

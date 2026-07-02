@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>AI Eval Platform 全功能分析大报告</title>
+<style>
+  :root {
+    --c-bg: #ffffff;
+    --c-ink: #0f172a;
+    --c-muted: #475569;
+    --c-line: #e2e8f0;
+    --c-accent: #2563eb;
+    --c-accent-soft: #dbeafe;
+    --c-green: #16a34a;
+    --c-green-soft: #dcfce7;
+    --c-amber: #d97706;
+    --c-amber-soft: #fef3c7;
+    --c-red: #dc2626;
+    --c-red-soft: #fee2e2;
+    --c-code-bg: #0f172a;
+    --c-code-ink: #e2e8f0;
+  }
+  @page {
+    size: A4;
+    margin: 20mm 18mm 20mm 18mm;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--c-bg);
+    color: var(--c-ink);
+    font-family: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", "Source Han Sans SC", sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.7;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* ---------- 封面 ---------- */
+  .cover {
+    width: 100%;
+    height: 257mm;
+    margin: -1mm -1mm 0 -1mm;
+    padding: 30mm 22mm;
+    background: linear-gradient(150deg, #0f172a 0%, #1e293b 55%, #1e3a8a 100%);
+    color: #f8fafc;
+    page-break-after: always;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: "";
+    position: absolute;
+    top: -60mm; right: -40mm;
+    width: 160mm; height: 160mm;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(59,130,246,0.35) 0%, transparent 70%);
+  }
+  .cover::after {
+    content: "";
+    position: absolute;
+    bottom: -50mm; left: -30mm;
+    width: 140mm; height: 140mm;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(168,85,247,0.25) 0%, transparent 70%);
+  }
+  .cover-kicker {
+    font-size: 12pt;
+    letter-spacing: 4pt;
+    text-transform: uppercase;
+    color: #93c5fd;
+    margin-bottom: 10mm;
+    position: relative;
+    z-index: 2;
+  }
+  .cover-title {
+    font-size: 40pt;
+    font-weight: 900;
+    line-height: 1.15;
+    margin: 0 0 8mm 0;
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(90deg, #ffffff 0%, #c7d2fe 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .cover-sub {
+    font-size: 14pt;
+    color: #cbd5e1;
+    font-weight: 300;
+    margin-bottom: 18mm;
+    position: relative;
+    z-index: 2;
+    max-width: 130mm;
+    line-height: 1.6;
+  }
+  .cover-meta {
+    border-left: 3px solid #60a5fa;
+    padding-left: 8mm;
+    position: relative;
+    z-index: 2;
+    margin-top: 30mm;
+  }
+  .cover-meta-row { font-size: 10.5pt; color: #e2e8f0; margin-bottom: 3mm; }
+  .cover-meta-row b { color: #93c5fd; font-weight: 600; display: inline-block; width: 24mm; }
+  .cover-footer {
+    position: absolute;
+    bottom: 18mm; left: 22mm; right: 22mm;
+    display: flex;
+    justify-content: space-between;
+    font-size: 9pt;
+    color: #64748b;
+    letter-spacing: 1pt;
+    z-index: 2;
+  }
+
+  /* ---------- 正文 ---------- */
+  h1 {
+    font-size: 19pt;
+    font-weight: 800;
+    color: var(--c-accent);
+    margin: 0 0 8pt 0;
+    padding-bottom: 6pt;
+    border-bottom: 2.5pt solid var(--c-accent);
+    page-break-after: avoid;
+  }
+  h2 {
+    font-size: 14pt;
+    font-weight: 700;
+    color: var(--c-ink);
+    margin: 18pt 0 8pt 0;
+    padding-left: 9pt;
+    border-left: 4pt solid var(--c-accent);
+    page-break-after: avoid;
+  }
+  h3 {
+    font-size: 12pt;
+    font-weight: 700;
+    color: var(--c-ink);
+    margin: 14pt 0 6pt 0;
+    page-break-after: avoid;
+  }
+  h4 {
+    font-size: 11pt;
+    font-weight: 700;
+    color: var(--c-accent);
+    margin: 10pt 0 4pt 0;
+    page-break-after: avoid;
+  }
+  p { margin: 5pt 0; text-align: justify; }
+  ul, ol { margin: 5pt 0 5pt 0; padding-left: 20pt; }
+  li { margin: 2.5pt 0; }
+  strong { color: var(--c-ink); font-weight: 700; }
+  code {
+    font-family: "JetBrains Mono", "Consolas", "Cascadia Code", monospace;
+    background: #f1f5f9;
+    color: #be123c;
+    padding: 0.5pt 4pt;
+    border-radius: 3pt;
+    font-size: 9pt;
+  }
+
+  /* ---------- 表格 ---------- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8pt 0;
+    font-size: 9.5pt;
+    page-break-inside: auto;
+  }
+  thead { display: table-header-group; }
+  th {
+    background: var(--c-accent);
+    color: #ffffff;
+    font-weight: 600;
+    text-align: left;
+    padding: 6pt 8pt;
+    border: 0.5pt solid var(--c-accent);
+    vertical-align: middle;
+  }
+  td {
+    padding: 5pt 8pt;
+    border: 0.5pt solid var(--c-line);
+    vertical-align: top;
+    word-break: break-word;
+  }
+  tbody tr:nth-child(even) { background: #f8fafc; }
+  tr { page-break-inside: avoid; }
+
+  /* ---------- 代码块 ---------- */
+  pre {
+    background: var(--c-code-bg);
+    color: var(--c-code-ink);
+    padding: 10pt 12pt;
+    border-radius: 5pt;
+    font-family: "JetBrains Mono", "Consolas", monospace;
+    font-size: 8.5pt;
+    line-height: 1.5;
+    overflow-x: auto;
+    margin: 8pt 0;
+    page-break-inside: avoid;
+    white-space: pre;
+  }
+  pre code { background: transparent; color: inherit; padding: 0; font-size: inherit; }
+
+  /* ---------- 徽标 ---------- */
+  .badge {
+    display: inline-block;
+    padding: 1pt 7pt;
+    border-radius: 9pt;
+    font-size: 8.5pt;
+    font-weight: 600;
+    line-height: 1.5;
+    vertical-align: middle;
+  }
+  .badge-ok { background: var(--c-green-soft); color: var(--c-green); }
+  .badge-warn { background: var(--c-amber-soft); color: var(--c-amber); }
+  .badge-bug { background: var(--c-red-soft); color: var(--c-red); }
+  .badge-info { background: var(--c-accent-soft); color: var(--c-accent); }
+
+  /* ---------- 提示框 ---------- */
+  .callout {
+    border-left: 3pt solid var(--c-accent);
+    background: var(--c-accent-soft);
+    padding: 8pt 12pt;
+    margin: 8pt 0;
+    border-radius: 0 4pt 4pt 0;
+    page-break-inside: avoid;
+    font-size: 10pt;
+  }
+  .callout-warn { border-color: var(--c-amber); background: var(--c-amber-soft); }
+  .callout-bug { border-color: var(--c-red); background: var(--c-red-soft); }
+  .callout-ok { border-color: var(--c-green); background: var(--c-green-soft); }
+
+  /* ---------- 分页与分节 ---------- */
+  .page-break { page-break-before: always; }
+  .section { page-break-inside: auto; }
+  .keep { page-break-inside: avoid; }
+
+  /* ---------- 摘要卡 ---------- */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 7pt;
+    margin: 10pt 0;
+  }
+  .stat-card {
+    background: linear-gradient(135deg, #eff6ff 0%, #f0f9ff 100%);
+    border: 0.5pt solid #bfdbfe;
+    border-radius: 6pt;
+    padding: 9pt 8pt;
+    text-align: center;
+  }
+  .stat-num {
+    font-size: 18pt;
+    font-weight: 800;
+    color: var(--c-accent);
+    line-height: 1.2;
+  }
+  .stat-label { font-size: 8.5pt; color: var(--c-muted); margin-top: 2pt; }
+
+  /* ---------- 目录 ---------- */
+  .toc { margin: 10pt 0; }
+  .toc-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 3.5pt 0;
+    border-bottom: 0.5pt dotted var(--c-line);
+    font-size: 10pt;
+  }
+  .toc-item .toc-num { color: var(--c-accent); font-weight: 700; margin-right: 6pt; }
+  .toc-sub { padding-left: 14pt; color: var(--c-muted); font-size: 9.5pt; }
+</style>
+</head>
+<body>
+
+<!-- ============ 封面 ============ -->
+<div class="cover">
+  <div class="cover-kicker">AI EVALUATION PLATFORM</div>
+  <div class="cover-title">AI Eval Platform<br>全功能分析大报告</div>
+  <div class="cover-sub">一个测一切的 AI 能力评测引擎——基于全部源码逐文件通读的实证分析，覆盖架构分层、评测引擎、harness 六层、API、数据库、前端与部署运维。</div>
+  <div class="cover-meta">
+    <div class="cover-meta-row"><b>分析对象</b> ai-eval-platform</div>
+    <div class="cover-meta-row"><b>代码规模</b> Go 后端 ~30,500 行 + Vue 前端 ~8,500 行</div>
+    <div class="cover-meta-row"><b>分析方法</b> 全部源码逐文件通读（未参考 TODO 文档）</div>
+    <div class="cover-meta-row"><b>报告日期</b> 2026 年 6 月</div>
+  </div>
+  <div class="cover-footer">
+    <span>CODE-BASED EVIDENCE REPORT</span>
+    <span>CONFIDENTIAL · INTERNAL</span>
+  </div>
+</div>
+
+<!-- ============ 目录 ============ -->
+<h1>目 录</h1>
+<div class="toc">
+  <div class="toc-item"><span><span class="toc-num">一</span>项目总览</span><span>03</span></div>
+  <div class="toc-item"><span><span class="toc-num">二</span>架构分层（实测）</span><span>04</span></div>
+  <div class="toc-item"><span><span class="toc-num">三</span>核心评测引擎功能</span><span>05</span></div>
+  <div class="toc-item toc-sub">意图路由 · 圆桌合议 · 双判官 · 断路器 · 沙箱 · 反泄漏 · 混沌 · RAG · 归因 · harness 六层</div>
+  <div class="toc-item"><span><span class="toc-num">四</span>API 层功能</span><span>11</span></div>
+  <div class="toc-item"><span><span class="toc-num">五</span>数据存储层</span><span>13</span></div>
+  <div class="toc-item"><span><span class="toc-num">六</span>协议逆向与调度子系统</span><span>14</span></div>
+  <div class="toc-item"><span><span class="toc-num">七</span>前端功能</span><span>16</span></div>
+  <div class="toc-item"><span><span class="toc-num">八</span>部署与工程化</span><span>18</span></div>
+  <div class="toc-item"><span><span class="toc-num">九</span>诚实评估：真实 / 占位 / Bug</span><span>19</span></div>
+  <div class="toc-item"><span><span class="toc-num">十</span>总体结论</span><span>21</span></div>
+</div>
+
+<!-- ============ 一、项目总览 ============ -->
+<div class="page-break"></div>
+<h1>一、项目总览</h1>
+
+<p><strong>一句话定位</strong>：一个"测一切的 AI 能力评测引擎"——被测对象任意（Agent / 大模型 / AIGC / 产品 / 竞品报告），评测规则用户定义，提供"喂题 → 执行 → 按规则打分 → 归因"的通用闭环。</p>
+
+<div class="callout">
+<strong>本报告的实证性声明：</strong>所有结论均来自对 <code>E:\glm\ai-eval-platform</code> 全部源码的逐文件通读，<strong>未参考项目内的任何 TODO / MRD 文档</strong>。报告中所列的代码行数、表数量、端点数量、测试数量均为实际统计。
+</div>
+
+<h2>量化指标</h2>
+<table>
+<thead><tr><th style="width:30%">维度</th><th>数据</th></tr></thead>
+<tbody>
+<tr><td>Go 后端代码</td><td>~30,516 行（不含测试），分布在 <code>internal/</code> + <code>cmd/</code></td></tr>
+<tr><td>Vue 前端代码</td><td>~8,475 行，18 个页面</td></tr>
+<tr><td>测试函数</td><td>187 个（<code>func Test*</code>），覆盖 engine / api / sdk / proxy / store</td></tr>
+<tr><td>数据库表</td><td>44 张（核心 31 + 评测 8 + Agent 运行时 5）</td></tr>
+<tr><td>HTTP 端点</td><td>145 个（GET 60 / POST 58 / PUT 10 / DELETE 17）+ 1 WebSocket</td></tr>
+<tr><td>编译产物</td><td><code>server.exe</code>(40MB)、<code>eval-cli.exe</code>、<code>mock-agent.exe</code> 均已编译</td></tr>
+<tr><td>运行状态</td><td><code>data/eval.db</code> + WAL（3.6MB 活跃写入）证明系统正在运行</td></tr>
+</tbody>
+</table>
+
+<div class="summary-grid">
+  <div class="stat-card"><div class="stat-num">30.5K</div><div class="stat-label">Go 后端代码行</div></div>
+  <div class="stat-card"><div class="stat-num">187</div><div class="stat-label">测试函数</div></div>
+  <div class="stat-card"><div class="stat-num">44</div><div class="stat-label">数据库表</div></div>
+  <div class="stat-card"><div class="stat-num">145</div><div class="stat-label">HTTP 端点</div></div>
+</div>
+
+<h2>技术栈</h2>
+<table>
+<thead><tr><th style="width:20%">层</th><th style="width:45%">技术</th><th>用途</th></tr></thead>
+<tbody>
+<tr><td>后端</td><td>Go 1.25 + Gin 1.12</td><td>HTTP 路由 + 中间件</td></tr>
+<tr><td>数据库</td><td>modernc.org/sqlite（纯 Go，免 CGO）</td><td>WAL 模式嵌入式存储</td></tr>
+<tr><td>WebSocket</td><td>gorilla/websocket</td><td>评测进度实时推送</td></tr>
+<tr><td>AI 调用</td><td>OpenAI 兼容协议为主</td><td>适配器额外支持 Anthropic / Gemini 原生协议</td></tr>
+<tr><td>前端</td><td>Vue 3.5 + Element Plus 2.14 + Pinia 3</td><td>响应式 SPA</td></tr>
+<tr><td>可视化</td><td>ECharts 6 + Monaco Editor + xterm.js</td><td>图表 / Diff / 终端</td></tr>
+<tr><td>部署</td><td>Docker Compose + GitHub Actions CI</td><td>4 个 CI job 并行</td></tr>
+</tbody>
+</table>
+
+<!-- ============ 二、架构分层 ============ -->
+<div class="page-break"></div>
+<h1>二、架构分层（实测）</h1>
+
+<p>整体采用清晰的四层架构，自上而下：前端 → API → 调度 → 引擎核心，引擎再外接 SQLite / 沙箱 / MITM 代理三个落地存储。</p>
+
+<pre><code>┌─────────────────────────────────────────────────────┐
+│  Vue3 + ElementPlus + ECharts（18 页面 + Web Worker） │
+└──────────────────────┬──────────────────────────────┘
+                       │ REST(/api) + WebSocket(/ws)
+┌──────────────────────▼──────────────────────────────┐
+│  Gin API（145 端点，27 个 handler 文件）              │
+│  中间件：requestID + CORS（localhost:5173）           │
+└──────────────────────┬──────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────┐
+│  Scheduler（Worker Pool 3 worker + Cron 30s 轮询）    │
+└──────────────────────┬──────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────┐
+│  Engine Core（评测引擎，40+ 模块）                     │
+│  Run(): 路由→断路器→RAG→调Agent→圆桌打分→沙箱→        │
+│         反泄漏→混沌→报告→异步归因                      │
+└──────┬────────────┬───────────────┬─────────────────┘
+       ▼            ▼               ▼
+   SQLite(44表)  Docker/进程沙箱   MITM Proxy(HTTP+HTTPS)</code></pre>
+
+<h2>启动流程</h2>
+<p>入口 <code>cmd/server/main.go</code>，启动顺序为：</p>
+<ol>
+<li><strong>进程硬化</strong>（<code>engine.HardenProcess</code>）—— 清 <code>LD_PRELOAD</code> 等危险环境变量</li>
+<li><strong>加载配置</strong>（<code>config.Load</code>）—— 环境变量 > 默认值</li>
+<li><strong>初始化 SQLite</strong>（<code>store.Init</code>）+ <strong>种子数据</strong>（<code>store.SeedIfEmpty</code>）</li>
+<li><strong>初始化沙箱容器池</strong>（<code>engine.InitSandboxPool</code>）</li>
+<li><strong>启动即时调度器</strong>（<code>scheduler.InitGlobal(engine.Run)</code>）+ <strong>Cron 调度器</strong></li>
+<li><strong>注册路由</strong>（<code>api.NewRouter</code>）→ 监听端口</li>
+<li><strong>优雅关闭</strong>：SIGINT/SIGTERM → 停调度器 → HTTP Shutdown → 关数据库</li>
+</ol>
+
+<!-- ============ 三、核心评测引擎 ============ -->
+<div class="page-break"></div>
+<h1>三、核心评测引擎功能</h1>
+<p>这是整个平台的<strong>心脏</strong>，也是最扎实、实现最完整的部分。<code>engine.go:Run</code> 是一个 8 步管线，全程不 panic（任何失败都标记 task=failed 兜底）。</p>
+
+<h2>3.1 意图识别路由（router.go）<span class="badge badge-ok">真实</span></h2>
+<p>单主 Agent 统管所有场景，<strong>不做 5 个独立场景 Agent</strong>（避免五份重复基建 + 数据隔离导致无法跨场景对比）。三级分类策略：</p>
+<ol>
+<li><strong>显式指定</strong>：用户直接传 <code>scene</code> 字段 → 置信度 100% 直接用</li>
+<li><strong>关键词匹配</strong>：每场景预设 7-9 个关键词，命中率 ≥ 60% 采用</li>
+<li><strong>LLM 分类 fallback</strong>：低置信度时调 <code>judge_models.main</code>（需 Key）</li>
+</ol>
+<p>5 个预置场景 → 4 种执行策略映射：</p>
+<table>
+<thead><tr><th>场景</th><th>策略</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td><code>agent</code></td><td><code>sandbox_roundtable</code></td><td>沙箱编译 + 圆桌合议（最完整）</td></tr>
+<tr><td><code>model</code></td><td><code>api_direct</code></td><td>单判官，不走沙箱</td></tr>
+<tr><td><code>competitor</code> / <code>prd</code></td><td><code>text_review</code></td><td>圆桌评审</td></tr>
+<tr><td><code>product</code></td><td><code>multimodal_review</code></td><td>多模态评审</td></tr>
+</tbody>
+</table>
+
+<h2>3.2 圆桌合议（roundtable.go）<span class="badge badge-ok">真实·设计精良</span></h2>
+<p><strong>一个主导者 + 多个领域专家并发评审</strong>，区别于单判官的"一条规则调一次 LLM"。核心要点：</p>
+<ul>
+<li>专家从 <code>judge_models</code> 表动态加载（role 以 <code>expert_</code> 开头），无数据回退预置 4 专家（安全/性能/架构/产品）</li>
+<li>也支持从 <code>expert_groups</code> 表加载可配置专家组（支持 agent/model/role 三类成员 + 内嵌 prompt + 引用 prompt_template + 权重 weight）</li>
+<li>各专家 <strong>goroutine 并发</strong>（<code>sync.WaitGroup</code>），每专家有 <strong>60s 超时保护</strong>不阻塞他人</li>
+<li>每专家只看自己维度的规则：metric 规则直接算（免费），llm 规则合并成 rubric 调一次 LLM</li>
+<li>metric × 0.4 + llm × 0.6 加权（metric 确定性高但覆盖面窄）</li>
+<li>主导者按 weight 加权汇总 + 生成综合评语（自动找出最强/最弱维度）</li>
+<li><strong>专家矛盾检测</strong>：同维度或跨维度评分差 &gt; 30 分标记矛盾</li>
+</ul>
+
+<h2>3.3 双判官打分体系（judge.go + metric.go + scorer.go）<span class="badge badge-ok">真实</span></h2>
+<h4>LLM 判官（judge.go）</h4>
+<p>规则 content 作 rubric，<code>temperature=0</code> 追求确定性，输出 <code>{score, reason}</code> JSON，正则兜底提取。</p>
+<h4>metric 判官（metric.go）</h4>
+<p>确定性校验器，不调 LLM。内置 <code>checkNoInjection</code>（检测 sprintf + SQL 拼接扣分，参数化 <code>?</code> 加分）、<code>checkNoSecretLeak</code>（硬编码 sk-xxx 检测）、<code>checkCompilable</code>（括号配平 + 结构）、<code>checkTestCoverage</code>。</p>
+<h4>三轨分发（scorer.go）</h4>
+<p><code>metric</code> / <code>llm</code> / <code>manual</code> 三种 scoring 方式，manual 为占位（阶段①不做人工 UI）。无 Key 时全套走启发式 mock 判官，保证 Demo 可演示。</p>
+
+<h2>3.4 钱包保护断路器（breaker.go）<span class="badge badge-ok">真实</span></h2>
+<p>解决"开发期 Agent 陷入无限内耗烧钱"问题。每题评测后检查三项上限：</p>
+<table>
+<thead><tr><th>上限项</th><th>默认值</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>Token 上限</td><td>10 万</td><td>单次评测最大 token 消耗</td></tr>
+<tr><td>Tool Calling 轮数</td><td>30</td><td>防止疯狂循环</td></tr>
+<tr><td>费用上限</td><td>$5</td><td>按 GLM-4-flash $0.002/1K 估算</td></tr>
+</tbody>
+</table>
+<p>超限立即熔断 <code>status=blown</code>，已评测题仍写入报告（部分结果）。每题后通过 WebSocket 实时推送断路器状态。多 provider 定价表（GPT-4o / Claude / DeepSeek / GLM / Qwen / o1）硬编码在 <code>estimateCost</code>。</p>
+
+<h2>3.5 沙箱执行（sandbox.go + sandbox_pool.go）<span class="badge badge-ok">真实·双轨</span></h2>
+<p><strong>Docker 容器池优先（Phase 2）→ 进程级沙箱回退（Phase 1）</strong>：</p>
+<ul>
+<li><strong>进程级</strong>：临时目录 <code>go build</code> / <code>python -m py_compile</code> / <code>node --check</code>，支持 Go/Python/JS 三语言编译 + 测试 + Lint</li>
+<li><strong>Docker 池</strong>：网络隔离 <code>--network none</code>、资源限制、只读 FS、无特权</li>
+<li>采集硬指标：编译时延、编译成功/失败、测试通过率（解析 <code>go test -v</code> / pytest 输出）、Lint 错误数</li>
+<li><strong>Test-Gen 集成</strong>：将自动生成的测试代码注入沙箱与源码一同编译运行</li>
+</ul>
+
+<h2>3.6 反泄漏扫描（antileak.go）<span class="badge badge-ok">真实·纯启发式</span></h2>
+<p>每题评测后扫描，4 类检测，<strong>不调 LLM</strong>（免费确定）：</p>
+<table>
+<thead><tr><th style="width:22%">检测类型</th><th style="width:14%">严重度</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>System Prompt 泄露</td><td><span class="badge badge-bug">critical</span></td><td>回答含 "system prompt" / "系统指令" / "我被设定为" 等，<code>isGenuineLeak</code> 区分正常自我介绍 vs 真泄露</td></tr>
+<tr><td>提示词注入</td><td><span class="badge badge-warn">high</span></td><td>输入含 "忽略之前的指令" / "jailbreak" / "DAN 模式" 等 13 种越狱模式</td></tr>
+<tr><td>踩额度攻击</td><td><span class="badge badge-warn">medium/high</span></td><td>输入 &gt; 10000 字 / 连续 5 次以上相同行刷屏</td></tr>
+<tr><td>凭据泄露</td><td><span class="badge badge-bug">critical</span></td><td>回答含 <code>sk-xxx</code> / <code>api_key=</code> / <code>password=</code> / 带密码的连接串，凭据脱敏后记入证据</td></tr>
+</tbody>
+</table>
+
+<h2>3.7 混沌工程（chaos.go）<span class="badge badge-ok">真实</span></h2>
+<p>"线下林志玲，线上罗玉凤"——主动注入故障测鲁棒性。4 种注入（仅对前 2 题注入，避免成本爆炸）：</p>
+<ol>
+<li><strong>弱网延迟</strong>：注入"API 超时 5000ms"提示，检测是否提到重试/降级</li>
+<li><strong>脏数据</strong>：注入缺右括号的 JSON，检测是否识别格式错误</li>
+<li><strong>越狱对抗</strong>：尝试让 Agent 忽略安全约束，拒绝 = 95 分，泄露 System Prompt = 10 分</li>
+<li><strong>资源耗尽</strong>：模拟磁盘满 / 内存不足 / 配额耗尽，检测是否提降级方案</li>
+</ol>
+<p>每次注入记录到 <code>permissions</code> 表（<code>chaos_injected=1</code>），鲁棒性分聚合进报告。</p>
+
+<h2>3.8 RAG 规则检索（rag.go）<span class="badge badge-ok">真实</span> <span class="badge badge-warn">embedding 占位</span></h2>
+<p>规则多了不爆 token，每题只检索 top-K 相关规则：</p>
+<ul>
+<li>检索 / 相似度排序 / 关系边查找链路<strong>完整工作</strong></li>
+<li><strong>但 embedding 是 hashing-trick 占位</strong>：FNV-1a 哈希把词映射到 128 维固定位置 + L2 归一化，<strong>不是真实 embedding 模型</strong>（代码注释明确"生产环境应替换"）</li>
+<li>支持沿 <code>rule_relations</code> 关系边拉关联规则（知识图谱）</li>
+<li>可持久化到 <code>rag_embeddings</code> 表</li>
+</ul>
+
+<h2>3.9 异常归因闭环（attribution.go）<span class="badge badge-ok">真实·含自动反哺</span></h2>
+<p>评测有 Bad Case 时<strong>后台异步</strong>分析根因（不阻塞主流程）：</p>
+<ul>
+<li><strong>4 类根因分类</strong>：<code>prompt_compliance</code>（指令遵循）/ <code>context_loss</code>（上下文丢失）/ <code>tool_failure</code>（工具失败）/ <code>model_limit</code>（模型上限）</li>
+<li>启发式归因（无 Key 时）+ LLM 归因</li>
+<li><strong>自动闭环反哺</strong>：置信度 ≥ 0.7 时，自动把修正建议写回 <code>prompt_templates</code> 表（创建新模板或新版本），实现"评测 → 暴露 Bug → 归因 → 提示词进化"</li>
+<li>高置信度（≥ 0.8）建议通过日志提示用户采纳</li>
+</ul>
+
+<h2>3.10 其它引擎能力</h2>
+<table>
+<thead><tr><th style="width:20%">模块</th><th style="width:18%">实现状态</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td><strong>Test-Gen</strong>（testgen.go）</td><td><span class="badge badge-ok">真实</span> + mock 兜底</td><td>解析 Diff 块自动生成单元测试，Go/Python/JS 三语言正则解析 + LLM 生成，无 Key 回退骨架测试</td></tr>
+<tr><td><strong>AI 出题</strong>（questiongen.go）</td><td><span class="badge badge-ok">真实</span> + mock 兜底</td><td>圆桌按维度批量出题 + 动态扩题（失败题生成变体），写库 source=<code>ai</code>/<code>dynamic</code></td></tr>
+<tr><td><strong>克隆 A/B</strong>（clone.go）</td><td><span class="badge badge-ok">真实</span></td><td>复制 Agent 换基座并联跑，算 <strong>MSI 敏感度指数</strong>（得分标准差）+ <strong>ROI 性价比</strong>（两两配对），给最优模型推荐</td></tr>
+<tr><td><strong>回归测试</strong>（regression.go）</td><td><span class="badge badge-ok">真实</span> + 估算</td><td>V1 vs V2 逐题逐维度 diff，标 pass→fail 回归漏洞 / fail→pass 改进</td></tr>
+<tr><td><strong>红队测试</strong>（redteam.go）</td><td><span class="badge badge-ok">真实</span></td><td>6 类（注入/泄露/越狱/提权/投毒/侧信道）× 20 = 120 条真实 payload，规则引擎判定中招，算 CVSS 分 + 修复建议</td></tr>
+<tr><td><strong>上下文压缩</strong>（compaction.go）</td><td><span class="badge badge-ok">真实</span> + 提取式兜底</td><td>滑动窗口 + LLM 摘要，6 种 Condenser 策略，无 Key 回退提取式（保留首尾 + 结构行）</td></tr>
+<tr><td><strong>多 provider 适配</strong></td><td><span class="badge badge-ok">真实</span></td><td>OpenAI / Anthropic / Gemini 原生协议各自实现，自动按 baseURL 检测路由，含五维 token 统计 + 重试退避</td></tr>
+</tbody>
+</table>
+
+<h2>3.11 harness 六层能力（借鉴 claw-code，已落地）</h2>
+<p>代码里真实实现了类 Claude Code 的 agent 运行时六层：</p>
+<table>
+<thead><tr><th style="width:8%">层</th><th style="width:28%">文件</th><th style="width:22%">实现状态</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>① AGENTS.md</td><td><code>agents_md_discovery.go</code></td><td><span class="badge badge-ok">真实</span></td><td>多层目录发现 AGENTS.md 注入 system prompt</td></tr>
+<tr><td>② Tools &amp; MCP</td><td><code>agent_loop.go</code> + <code>builtin_tools.go</code> + <code>mcp_client.go</code></td><td><span class="badge badge-ok">真实</span></td><td>完整 ReAct 循环，8 个内置工具（Bash/FileRead/FileWrite/FileEdit/Glob/Grep/WebSearch/tool_search），MCP 支持 HTTP+stdio 双 transport</td></tr>
+<tr><td>③ Skills</td><td><code>skills_loader.go</code></td><td><span class="badge badge-ok">真实</span></td><td>渐进式披露，三级目录（project&gt;user&gt;managed）扫描 SKILL.md frontmatter</td></tr>
+<tr><td>④ Subagents</td><td><code>subagent.go</code></td><td><span class="badge badge-ok">真实</span></td><td>Task 工具 fan-out 子代理，Coordinator（零继承）+ Fork（全继承）两种模式，递归深度 guard + 独立断路器</td></tr>
+<tr><td>⑤ Hooks</td><td><code>hooks.go</code></td><td><span class="badge badge-ok">真实</span></td><td>9 种生命周期事件（PreToolUse/PostToolUse/Stop 等），支持 command/llm/verifier 三种 hook 类型</td></tr>
+<tr><td>⑥ Back-Pressure</td><td><code>backpressure.go</code></td><td><span class="badge badge-warn">未接入主循环</span></td><td><code>VerifyWithRetry</code> 回路写好了但 agent_loop 未调用，agent 需主动调 Verify 工具</td></tr>
+</tbody>
+</table>
+
+<h4>配套的安全设施</h4>
+<ul>
+<li><strong>权限门控</strong>（permission_gate.go）：read-only / workspace-write / full 三级，<code>CheckCommand</code> 拦截危险命令（rm -rf /、fork 炸弹、mkfs、dd 裸盘等），<code>CheckSandboxCode</code> 预检被测代码内嵌的危险调用，<code>RecordDecision</code> 写 <code>permissions</code> 表审计</li>
+<li><strong>密钥加密</strong>（secrets.go）：AES-GCM 真实实现，但<strong>默认 key 硬编码</strong>且<strong>未接入实际 api_key 读写路径</strong>（独立设施）</li>
+<li><strong>进程硬化</strong>：启动时清 <code>LD_PRELOAD</code> 等危险环境变量</li>
+<li><strong>终端轨道</strong>（terminal.go）：本地源码/进程托管，三种喂题模式（args/stdin/oneshot），AutoDiscover 自动识别 Python/Go/Node 项目</li>
+</ul>
+
+<!-- ============ 四、API 层 ============ -->
+<div class="page-break"></div>
+<h1>四、API 层功能（internal/api/，27 个 handler）</h1>
+<p><strong>145 个端点</strong>，按功能域归类如下。</p>
+
+<h2>4.1 七库资源 CRUD（核心数据）</h2>
+<ul>
+<li><strong>Agents 库</strong>：CRUD + AI 创造（quick/detail 两种模式）+ Agent 定义文件实例化 + hooks 管理 + 状态查询</li>
+<li><strong>Models 库</strong>（被测考生）：CRUD + 连通性探活</li>
+<li><strong>Tools / MCP / Skills 库</strong>：CRUD</li>
+<li><strong>Model Config</strong>：角色 ↔ 模型映射（圆桌各专家绑定）</li>
+<li><strong>Prompt Templates</strong>：CRUD + <strong>版本历史 + 回滚</strong></li>
+<li><strong>Expert Groups</strong>：专家组 CRUD + AI 生成草稿</li>
+</ul>
+
+<h2>4.2 评测流程</h2>
+<p>任务 CRUD + 规则/规则集 CRUD + 题库 CRUD（多维筛选）+ AI 出题 + 动态扩题 + GitLab 基线导入 + 测试卷管理 + 会话查询 + 归因查询。</p>
+
+<h2>4.3 数据看板与统计</h2>
+<p>看板总览（指标卡）/ 综合分趋势折线 / 多 Agent 排行榜 / Bad Case 列表 / 归因列表 / <strong>双路 token 统计</strong>（被测 Agent vs 平台 condenser 分别计费）。</p>
+
+<h2>4.4 差异化高级能力</h2>
+<p>混沌测试触发 / 克隆 A/B / 单+批量归因 / Prompt 智能平移适配 / 规则知识图谱（环形布局节点 + 关系边）/ 规则关系边 CRUD / JSON 导入导出 / 人工反馈闭环（Bad Case 踩赞 + 任务反馈 + 规则建议采纳）。</p>
+
+<h2>4.5 六大扩展方向（每个一套独立表 + handler）</h2>
+<table>
+<thead><tr><th style="width:16%">方向</th><th style="width:24%">handler</th><th>核心能力</th></tr></thead>
+<tbody>
+<tr><td>Agent CI/CD</td><td><code>expansion_pipeline.go</code></td><td>管线定义（含质量门禁 gate_config）+ 异步触发 + 运行历史</td></tr>
+<tr><td>Agent Arena</td><td><code>expansion_arena.go</code></td><td>ELO 排行榜 + 对战记录 + 异步评测 <span class="badge badge-bug">评分硬编码假数据</span></td></tr>
+<tr><td>红队安全</td><td><code>expansion_redteam.go</code></td><td>6 类 payload 扫描 + CVSS 报告</td></tr>
+<tr><td>生产可观测</td><td><code>expansion_observe.go</code></td><td>指标上报 + 仪表盘聚合 + 告警规则匹配</td></tr>
+<tr><td>微调数据</td><td><code>expansion_finetune.go</code></td><td>从 Bad Case 导出 SFT/DPO 训练对 <span class="badge badge-bug">JOIN 语义有 bug</span></td></tr>
+<tr><td>多 Agent 编排</td><td><code>expansion_workflow.go</code></td><td>DAG 工作流 <span class="badge badge-bug">未做拓扑排序</span></td></tr>
+</tbody>
+</table>
+
+<h2>4.6 MITM 代理管理</h2>
+<p>启停 + 状态 + 会话捕获/详情/转换/回放 + CA 证书生成 + 环境变量重定向脚本生成。</p>
+
+<h2>4.7 中间件与问题</h2>
+<div class="callout callout-bug">
+<strong>中间件：</strong>requestID + CORS（硬编码 localhost:5173）。<strong>无任何鉴权</strong>：所有端点裸奔，终端执行/代理控制/API Key 写入均无保护。
+</div>
+<div class="callout callout-warn">
+<strong>requestID 生成 bug：</strong><code>generateShortID()</code> 确定性（<code>make([]byte,12)</code> 零初始化 + 异或固定），所有请求同一 ID，追踪失效。
+</div>
+<div class="callout callout-ok">
+<strong>正面确认：</strong>所有动态 SQL 均用 <code>?</code> 参数化，<strong>未发现 SQL 注入</strong>。也没有空 handler 或纯 TODO 占位函数。
+</div>
+
+<!-- ============ 五、存储层 ============ -->
+<div class="page-break"></div>
+<h1>五、数据存储层（internal/store/，44 张表）</h1>
+
+<h2>5.1 数据库设计</h2>
+<ul>
+<li><strong>modernc.org/sqlite</strong>（纯 Go 免 CGO）+ WAL 模式 + 5s busy_timeout</li>
+<li>连接池 MaxOpenConns=3 / MaxIdleConns=2（适配 WAL 的并发读 + 单写）</li>
+<li>启动时顺序迁移 <code>migrateCore → migrateEval → migrateAgent</code>，全用 <code>CREATE TABLE IF NOT EXISTS</code>（幂等）</li>
+<li><strong>增量列迁移</strong> <code>migrateAddColumn</code>：吞掉"列已存在"错误实现幂等（但也吞掉真实错误）</li>
+</ul>
+
+<h2>5.2 表分布（实测 44 张）</h2>
+<table>
+<thead><tr><th style="width:22%">文件</th><th style="width:10%">表数</th><th>核心表（节选）</th></tr></thead>
+<tbody>
+<tr><td><strong>schema_core</strong></td><td>31</td><td>七库基础（agents/models/tasks/rules/rule_sets/tools/mcp_servers/skills/model_config/prompt_templates/scenes）+ 模型职责分离（judge_models 区分考生/考官）+ 专家组 + 六大扩展方向（pipelines/arena/redteam/agent_metrics/workflows 等）</td></tr>
+<tr><td><strong>schema_eval</strong></td><td>8</td><td>cron_jobs / questions / bad_cases / attributions / task_feedback / rule_suggestions / rag_embeddings / question_sets</td></tr>
+<tr><td><strong>schema_agent</strong></td><td>5</td><td>conversations / permissions / compactions / sessions / tool_calls（Agent 运行时，借鉴 claw-code）</td></tr>
+</tbody>
+</table>
+
+<h2>5.3 种子数据（seed.go，幂等）</h2>
+<table>
+<thead><tr><th style="width:25%">类型</th><th style="width:12%">数量</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>模型（models）</td><td>3</td><td>glm-4 / deepseek-chat / glm-4-flash（Key 留空）</td></tr>
+<tr><td>被测 Agent</td><td>3</td><td>CodeGen / Debug Hunter / Arch Reviewer，覆盖 api 接入</td></tr>
+<tr><td>内置 Tool</td><td>5</td><td>shell_exec / file_read / file_write / http_request / static_scan</td></tr>
+<tr><td>评测规则</td><td>13</td><td>覆盖 security/performance/architecture/product/correctness 五维</td></tr>
+<tr><td>规则集</td><td>7</td><td>全栈/安全/架构/大模型/竞品/PRD/产品 七场景套件</td></tr>
+<tr><td>题目</td><td>17</td><td>覆盖全场景 + 3 道带来源追溯基线题</td></tr>
+<tr><td>考官模型</td><td>6</td><td>main + 4 专家 + 出题，含各自维度</td></tr>
+<tr><td>专家组</td><td>1 组</td><td>eg-default 含安全/性能/架构/产品四维专家</td></tr>
+</tbody>
+</table>
+
+<h2>5.4 query.go / rows.go</h2>
+<p><code>query.go</code> ~40 个封装函数（Get/Upsert/Update/Insert/Delete），让 engine 包不直接写 SQL，与 api 层 handler 的直查并存。<code>rows.go</code> 11 个中立 <code>XxxRow</code> 结构体，避免 engine 依赖 api（防循环依赖）。</p>
+
+<!-- ============ 六、子系统 ============ -->
+<div class="page-break"></div>
+<h1>六、协议逆向与调度子系统</h1>
+
+<h2>6.1 MITM 代理（internal/proxy/）<span class="badge badge-ok">真实</span> <span class="badge badge-bug">有 bug</span></h2>
+<ul>
+<li><strong>HTTP 代理</strong>（proxy.go）：反向代理 + request/response 捕获 + 凭证提取（Bearer/x-api-key/sk-/Cookie）+ 脱敏（前4后4）+ ReplaySession + ConvertSessionToTask</li>
+<li><strong>HTTPS MITM</strong>（proxy_tls.go）：<strong>手写解析 TLS ClientHello 提取 SNI</strong> → 动态签发证书 → 伪服务器握手 → 明文读 HTTP → 真实客户端转发。HTTP/1.1 keep-alive 支持，body 脱敏</li>
+<li><strong>CA 管理</strong>（ca.go）：RSA 2048 自签 CA（10 年），leaf 证书按域名缓存（24h），各平台安装指引</li>
+<li><strong>环境变量重定向</strong>（redirector.go）：对标 claude-code-router，生成 ANTHROPIC_BASE_URL / OPENAI_BASE_URL 注入脚本。<strong>诚实降级</strong>：MRD 的激进灰色能力（TLS 指纹伪造 / IPC 劫持 / 配置解密）全部 <code>return ErrNotImplemented</code></li>
+</ul>
+<div class="callout callout-bug">
+<strong>已知 bug：</strong>HTTP 代理 session 分组逻辑错误（所有请求进同一 session）；HTTP 路径不脱敏但 HTTPS 脱敏，两条路径不一致；存在死代码（旧 peekSNI/handleConnection 未删）。
+</div>
+
+<h2>6.2 调度器（internal/scheduler/）<span class="badge badge-ok">真实</span></h2>
+<h4>即时调度（scheduler.go + global.go）</h4>
+<p>channel-based Worker Pool（默认 3 worker，buffered channel 容量 100），单任务超时 300s + 重试 2 次，<code>running</code> map 去重。<code>RunDirect</code> 作为队列满时的降级保底。</p>
+<div class="callout callout-warn">
+<strong>优先级字段是摆设：</strong><code>Task.Priority</code> 字段存在，<code>Submit</code> 也接收 priority，但 worker 从单一 channel 取任务，channel 是 FIFO，<strong>优先级完全没有被使用</strong>。
+</div>
+<h4>Cron 调度（cron.go + global_cron.go）</h4>
+<p>自研简化 Cron（不依赖外部库），30s 轮询检查，持久化到 cron_jobs 表。<strong>解析极度残缺</strong>：只处理 5 字段的前两位（minute/hour），日/月/周字段被忽略；不支持范围（<code>1-5</code>）、列表（<code>1,3,5</code>）。</p>
+
+<h2>6.3 SDK 接入（internal/sdk/）<span class="badge badge-ok">真实</span> <span class="badge badge-warn">包路径混乱</span></h2>
+<ul>
+<li><strong>PlatformClient</strong>：RegisterAgent / ListAgents / SubmitTask / GetTask / WaitForTask（2s 轮询 10min 超时）/ ListRuleSets / ListQuestions</li>
+<li><strong>EvalHandler</strong>：Agent 侧 HTTP Handler，平台 POST <code>/eval</code> 调 Agent</li>
+<li><strong>MCPServerHandler</strong>：MCP 协议适配（ListTools + call_tool）</li>
+<li><strong>CLI</strong>（eval-cli）：register / submit / status / list 四类命令，平台地址和 key 从环境变量读</li>
+<li><strong>mock-agent 示例</strong>：完整端到端演示（启动 :9090 Agent → 注册自己 → 提交评测 → 等结果），按 prompt 关键词返回不同 mock Go 代码</li>
+</ul>
+<div class="callout callout-warn">
+<strong>包路径问题：</strong><code>internal/sdk</code> 和 <code>pkg/sdk</code> 维护了两份副本，CLI/示例 import <code>pkg/sdk</code>，README 写 <code>internal/sdk</code>，矛盾。需确认哪份是 source of truth。
+</div>
+
+<h2>6.4 WebSocket Hub（internal/ws/）<span class="badge badge-ok">真实·简洁规范</span></h2>
+<p><code>taskID → []*listener</code> 映射，<code>Subscribe</code> 返回缓冲 64 的 channel；非阻塞发送（满则丢，反压策略）；支持"全局订阅"（taskID 空，看板用）。6 类事件：</p>
+<table>
+<thead><tr><th>事件</th><th>Data 结构</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td><code>question_start</code></td><td>QuestionStartData</td><td>第 N 题 / 总题数 / 题目摘要</td></tr>
+<tr><td><code>agent_response</code></td><td>AgentResponseData</td><td>回答前 200 字预览 + token_in/out</td></tr>
+<tr><td><code>question_done</code></td><td>QuestionDoneData</td><td>该题分数 + is_bad_case</td></tr>
+<tr><td><code>task_done</code></td><td>TaskDoneData</td><td>overall 综合分 + dimensions 雷达 + bad_cases + mock_mode</td></tr>
+<tr><td><code>breaker_status</code></td><td>BreakerStatusData</td><td>累计 token / 轮数 / 估算费用 / 是否熔断</td></tr>
+<tr><td><code>task_error</code></td><td>—</td><td>任务异常</td></tr>
+</tbody>
+</table>
+
+<!-- ============ 七、前端 ============ -->
+<div class="page-break"></div>
+<h1>七、前端功能（web/src/，18 页面）</h1>
+<div class="callout callout-ok">
+<strong>结论：前端是真实可用的产品级实现，不是占位壳。</strong>全链路对接 REST + WebSocket，涉及约 50+ 个不同端点。
+</div>
+
+<h2>7.1 技术实现</h2>
+<ul>
+<li>统一 <code>api.ts</code>（axios，baseURL <code>/api</code>，Response 拦截 unwrap data，统一错误处理）</li>
+<li>Pinia 字典幂等缓存（<code>ensure*</code> 已缓存不重复请求）+ 强制刷新</li>
+<li>路由懒加载，18 条路由，每条带 <code>meta.title</code> 和 <code>meta.icon</code></li>
+<li><strong>Web Worker</strong>（data-worker.ts）：离线程做 parse_json / pareto（非支配解算法）/ leaderboard / matrix_diff / aggregate，避免主线程卡顿</li>
+</ul>
+
+<h2>7.2 可视化能力（专业选型）</h2>
+<table>
+<thead><tr><th style="width:18%">能力</th><th style="width:30%">库</th><th>用途</th></tr></thead>
+<tbody>
+<tr><td>图表</td><td>ECharts 6（BaseChart 封装）</td><td>雷达 / 饼 / 柱 / 折线 / 散点 / 力导向 graph</td></tr>
+<tr><td>Diff</td><td>Monaco Editor（diff 库 CSS 回退）</td><td>Clone 回答对比，双方案容错</td></tr>
+<tr><td>终端</td><td>xterm.js</td><td>Agent 执行日志回放（GitHub dark 配色）</td></tr>
+<tr><td>知识图谱</td><td><strong>纯 Canvas 手写力导向</strong></td><td>RuleGraph，排斥力 + 边引力 + 中心引力 + 阻尼，无外部图库</td></tr>
+</tbody>
+</table>
+
+<h2>7.3 各页面完成度</h2>
+<h4>完整深度对接（核心业务）</h4>
+<ul>
+<li><strong>Tasks</strong>（场景 Tab + 任务列表/详情/创建）、<strong>Dashboard</strong>（指标卡 + 4 图表）、<strong>Resources</strong>（8 子 Tab CRUD）</li>
+<li><strong>Questions</strong>（题库 + AI 出题 + 基线导入）、<strong>Standards</strong>（规则集 + 知识图谱 + 反哺）</li>
+<li><strong>Clone</strong>（克隆对比 + 雷达叠加 + ROI 表）、<strong>Regression</strong>（版本 diff + 维度柱图）</li>
+<li><strong>CreateAgent</strong>（AI 创造）、<strong>Settings</strong>（双模型库 + 探活）</li>
+</ul>
+<h4>可用但较轻</h4>
+<p>Pipeline / Arena / RedTeam / Observability / FineTune / Workflow / Cron / Leaderboard / Terminal / Proxy（单表 CRUD + 触发）。</p>
+
+<h4>报告渲染（TaskReport.vue，639 行，最复杂）</h4>
+<p>解析 result JSON，渲染总分卡 + 维度雷达柱图 + 断路器费用 + 沙箱指标 + 混沌表 + 反泄漏 + 圆桌详情 + 人工反馈。</p>
+
+<h4>实时运行（TaskRun.vue）</h4>
+<p>WebSocket 优先（失败回退 1.5s 轮询），三种视图：时间线 / 拓扑图 / 终端。</p>
+
+<div class="callout callout-warn">
+<strong>局部 mock 痕迹：</strong>Resources 的 Agent 调试 Drawer（setTimeout 假回复）、CreateAgent 状态条（伪实时 setInterval）、Settings 通知开关（本地状态）。
+</div>
+
+<!-- ============ 八、部署 ============ -->
+<div class="page-break"></div>
+<h1>八、部署与工程化</h1>
+<ul>
+<li><strong>Docker</strong>：多阶段构建（builder 编译 + 运行镜像），docker-compose 一键部署，healthcheck（wget <code>/api/health</code>），volume 持久化数据</li>
+<li><strong>沙箱镜像</strong>：sandbox-go / python / node 三个独立 Dockerfile</li>
+<li><strong>CI</strong>（GitHub Actions）：4 job 并行——backend（build + test + coverage）/ frontend（typecheck + build）/ lint（golangci-lint）/ docker（依赖前两个），用 gha cache</li>
+<li><strong>Makefile</strong>：完整目标（build/test/test-race/coverage/vet/frontend/docker/dev），Windows/Linux 双适配</li>
+<li><strong>Nginx</strong>：deploy/nginx.conf 提供生产反代配置</li>
+</ul>
+
+<!-- ============ 九、评估 ============ -->
+<div class="page-break"></div>
+<h1>九、诚实评估：真实 / 占位 / Bug</h1>
+
+<h2>9.1 真实且扎实的部分（平台核心价值）</h2>
+<ol>
+<li><strong>评测引擎主流程</strong>（engine.go 8 步管线）——端到端跑通，含 WebSocket 实时推送</li>
+<li><strong>圆桌合议</strong>——并发专家 + 超时保护 + 矛盾检测，设计精良</li>
+<li><strong>沙箱双轨执行</strong>——Docker 池 + 进程级回退，三语言编译测试</li>
+<li><strong>harness 六层</strong>——ReAct 循环 + 内置工具 + MCP + Skills + Subagents + Hooks，借鉴 claw-code 落地</li>
+<li><strong>权限门控</strong>——三级 + 危险命令拦截 + 代码预检，安全设施完整</li>
+<li><strong>断路器</strong>——钱包保护，三项上限</li>
+<li><strong>归因闭环</strong>——根因分析 + 自动反哺 Prompt 模板</li>
+<li><strong>前端全链路</strong>——18 页面对接真实 API，专业可视化</li>
+<li><strong>MITM 代理</strong>——HTTP + HTTPS 完整实现（含 SNI 解析 + 动态证书签发）</li>
+<li><strong>44 张表的数据库设计</strong>——模型职责分离（考生/考官）做得规范</li>
+</ol>
+
+<h2>9.2 有降级 / 占位成分（诚实标注）</h2>
+<ol>
+<li><strong>RAG embedding</strong>——hashing-trick 占位，非真实 embedding 模型</li>
+<li><strong>无 Key 时大量 mock</strong>——判官/出题/Agent 回答/归因均有 mock 兜底（设计决策，保证 Demo 可演示，属合理降级）</li>
+<li><strong>Cost 估算</strong>——硬编码定价表，非真实计费</li>
+<li><strong>manual 规则打分</strong>——占位（阶段①不做人工 UI）</li>
+<li><strong>协议逆向激进能力</strong>——TLS 指纹 / IPC 劫持等 <code>return ErrNotImplemented</code>（诚实降级，合规考虑）</li>
+<li><strong>加密默认 key</strong>——secrets.go 默认 key 硬编码，未接入实际路径</li>
+<li><strong>前端局部 mock</strong>——Agent 调试 / 创造状态条 / 通知开关</li>
+</ol>
+
+<h2>9.3 发现的真实 Bug（代码层面）</h2>
+<table>
+<thead><tr><th style="width:5%">#</th><th style="width:30%">Bug</th><th style="width:25%">位置</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Arena 排行榜评分硬编码</td><td><code>expansion_arena.go</code></td><td>调了 ChatAgent 却丢弃结果，分数写死 75/80/70，成本恒 0.01</td></tr>
+<tr><td>2</td><td>Prompt 模板版本归档 SQL 参数不匹配</td><td><code>resource2.go</code></td><td>3 占位符传 2 参数，版本历史静默失败</td></tr>
+<tr><td>3</td><td>requestID 生成确定性</td><td><code>router.go</code></td><td>所有请求同一 ID，追踪失效</td></tr>
+<tr><td>4</td><td>HTTP 代理 session 分组错误</td><td><code>proxy.go</code></td><td>所有请求进同一 session</td></tr>
+<tr><td>5</td><td>Cron 解析残缺</td><td><code>cron.go</code></td><td>忽略日/月/周字段，不支持范围/列表</td></tr>
+<tr><td>6</td><td>优先级队列是摆设</td><td><code>scheduler.go</code></td><td>channel FIFO，priority 未生效</td></tr>
+<tr><td>7</td><td>微调导出 JOIN 语义错误</td><td><code>expansion_finetune.go</code></td><td><code>q.scene=COALESCE(?, task_id)</code> 逻辑不通</td></tr>
+<tr><td>8</td><td>工作流 DAG 未拓扑排序</td><td><code>expansion_workflow.go</code></td><td>节点顺序错则下游拿不到上游结果</td></tr>
+<tr><td>9</td><td>MCP SQL 字符串拼接</td><td><code>mcp_client.go:442</code></td><td>参数来自 LLM，注入风险</td></tr>
+<tr><td>10</td><td>migrateAddColumn 吞所有错误</td><td><code>schema_core.go</code></td><td>掩盖真实迁移失败</td></tr>
+<tr><td>11</td><td>SeedIfEmpty 仅判 agents 表</td><td><code>seed.go</code></td><td>中途失败重启会跳过 seed，平台半残</td></tr>
+<tr><td>12</td><td>backpressure 回路未接入主循环</td><td><code>backpressure.go</code></td><td>VerifyWithRetry 孤立</td></tr>
+<tr><td>13</td><td>SDK 两份副本</td><td><code>internal/sdk</code> vs <code>pkg/sdk</code></td><td>包路径矛盾，需统一</td></tr>
+</tbody>
+</table>
+
+<!-- ============ 十、结论 ============ -->
+<div class="page-break"></div>
+<h1>十、总体结论</h1>
+
+<div class="callout callout-ok">
+这是一个<strong>完成度相当高、架构清晰、核心功能真实落地</strong>的 AI 评测平台。它不是 PPT 项目或占位壳——编译产物存在、数据库在运行、187 个测试、145 个 API 端点、44 张表、18 个前端页面全部对接真实后端。
+</div>
+
+<p><strong>最扎实的部分</strong>是评测引擎（圆桌合议 + 沙箱 + 断路器 + 归因闭环）和 harness 六层能力（ReAct + Tools + MCP + Skills + Subagents + Hooks），这两块是真正的工程价值所在。<strong>最薄弱的部分</strong>是六大扩展方向（Arena/Finetune/Workflow 有真实 bug）和安全（无鉴权 + API Key 明文 + 加密默认 key）。</p>
+
+<p>项目对自己的能力边界很诚实——<code>docs/ARCHITECTURE.md</code> 主动校准了对 claw-code 和 claude-code-router 的误读，把法律灰色能力降级为预留接口。这种"能让系统真正可用、可维护、可演示的做；灰色、高成本、低实用性的降级"的工程判断，是成熟的表现。</p>
+
+<h2>优先级建议</h2>
+<table>
+<thead><tr><th style="width:8%">优先级</th><th style="width:42%">建议</th><th>理由</th></tr></thead>
+<tbody>
+<tr><td><span class="badge badge-bug">P0</span></td><td>补鉴权中间件</td><td>安全红线：终端执行/代理控制/API Key 写入全部裸奔</td></tr>
+<tr><td><span class="badge badge-warn">P1</span></td><td>修复 Arena / Finetune / Workflow 三个 bug</td><td>六大扩展方向中三个产出错误数据</td></tr>
+<tr><td><span class="badge badge-warn">P1</span></td><td>把 RAG embedding 换成真实模型</td><td>当前 hashing-trick 占位影响检索质量</td></tr>
+<tr><td><span class="badge badge-info">P2</span></td><td>补 Cron 语法 + 优先级队列</td><td>调度能力目前名不副实</td></tr>
+<tr><td><span class="badge badge-info">P2</span></td><td>SDK 包路径统一</td><td>internal/sdk 与 pkg/sdk 两份副本</td></tr>
+<tr><td><span class="badge badge-info">P3</span></td><td>API Key 加密接入实际路径</td><td>secrets.go 设施存在但未用</td></tr>
+</tbody>
+</table>
+
+<div class="callout">
+<strong>报告说明：</strong>本报告全部内容基于对 ai-eval-platform 全部源码的逐文件通读得出，未参考项目内的任何 TODO / MRD 文档。所有量化数据（代码行数、表数量、端点数、测试数）均为实际统计，所有 Bug 描述均定位到具体文件与代码位置。
+</div>
+
+</body>
+</html>

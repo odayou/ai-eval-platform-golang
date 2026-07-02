@@ -1,0 +1,12 @@
+# AI Eval Platform — Husky 安装说明
+#
+# 在项目根目录运行以下命令启用 git hooks:
+#
+#   npx husky install
+#
+# 如果尚未安装 husky:
+#
+#   cd web
+#   npm install --save-dev husky
+#   npx husky install
+#   npx husky add .husky/pre-commit "sh .husky/pre-commit"
