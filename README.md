@@ -4,8 +4,7 @@
 [![Vue Version](https://img.shields.io/badge/Vue-3.5-4FC08D?logo=vue.js)](https://vuejs.org)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
-> **一个测一切的 AI 评测引擎** — 被测对象任意、评测规则用户定义。  
-> 面向字节抖音服务架构团队的 Agent / 大模型 / AIGC 能力评测与研发流程建设方案。
+> **一个测一切的 AI 评测引擎** — 被测对象任意、评测规则用户定义。
 
 ---
 
@@ -360,5 +359,4 @@ MIT License
 
 ## 项目背景
 
-本项目源于字节抖音服务架构团队的 AI 产品运营实习生岗位 MRD 面试方案。  
-产品架构高度借鉴 [claw-code](https://github.com/claw-code/claw-code)（Claude Code 的 Rust clean-room 重写，MIT 协议）。
+本项目源于 AI 产品运营实习生岗位 MRD 面试方案。
