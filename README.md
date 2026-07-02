@@ -359,4 +359,4 @@ MIT License
 
 ## 项目背景
 
-产品架构高度借鉴 [claw-code](https://github.com/claw-code/claw-code)。
+产品架构高度借鉴 [claw-code](https://github.com/claw-code/claw-code) 与 opencode harness-engineering 理念。
