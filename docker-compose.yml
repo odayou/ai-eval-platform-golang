@@ -23,6 +23,8 @@ services:
       - DB_PATH=/app/data/eval.db
       - GIN_MODE=release
       - DOCKER_ENABLED=false
+      # 生产对外暴露时必须显式配置前端来源(逗号分隔),否则跨域写请求会被 403:
+      # - CORS_ORIGINS=https://eval.example.com,https://eval2.example.com
       # 如需 Docker 沙箱,设为 true 并挂载 docker socket:
       # - DOCKER_ENABLED=true
       # - DOCKER_HOST=unix:///var/run/docker.sock

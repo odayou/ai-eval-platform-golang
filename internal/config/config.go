@@ -34,8 +34,8 @@ type Config struct {
 	// 可用 MAX_CONCURRENT_EVALS 覆盖。
 	MaxConcurrentEvals int
 
-		// EvalTimeoutSec 单次评测超时秒数(为 ②引擎熔断预留),默认 300 秒
-		EvalTimeoutSec int
+	// EvalTimeoutSec 单次评测超时秒数(为 ②引擎熔断预留),默认 300 秒
+	EvalTimeoutSec int
 
 	// DockerEnabled 是否启用 Docker 沙箱容器池。
 	// 默认 false(进程级沙箱),可用 DOCKER_ENABLED=true 开启。
@@ -65,9 +65,13 @@ func Load() *Config {
 		MaxConcurrentEvals: getenvInt("MAX_CONCURRENT_EVALS", 2),
 		EvalTimeoutSec:     getenvInt("EVAL_TIMEOUT_SEC", 300),
 		DockerEnabled:      getenv("DOCKER_ENABLED", "false") == "true",
-		CORSOrigins:        parseCORSOrigins(getenv("CORS_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173")),
-		RateLimit:          getenvFloat("RATE_LIMIT", 10),
-		RateBurst:          getenvFloat("RATE_BURST", 20),
+		// 默认放行本地任意端口(http://localhost:*/127.0.0.1:*):Vite 端口漂移不可预测,
+		// 浏览器 POST 总是带 Origin 头,不在白名单会被 CORS 中间件 403。
+		// 用 gin-contrib/cors 的正则 Origin 语法(/.../ 包裹)匹配任意端口;
+		// 生产部署必须用 CORS_ORIGINS 显式覆盖,不要依赖此默认值。
+		CORSOrigins: parseCORSOrigins(getenv("CORS_ORIGINS", `/^http://(localhost|127\.0\.0\.1):\d+$/`)),
+		RateLimit:   getenvFloat("RATE_LIMIT", 10),
+		RateBurst:   getenvFloat("RATE_BURST", 20),
 	}
 
 	// 确保数据库所在目录存在,否则 modernc/sqlite 打开会失败
