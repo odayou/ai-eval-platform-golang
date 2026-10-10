@@ -37,7 +37,7 @@ logs/
 *.dylib
 /server
 /cmd/server/server
-cmd/server
+# cmd/server
 eval-cli
 eval-cli.exe
 mock-agent

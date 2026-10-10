@@ -4,7 +4,7 @@ import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
-const collapsed = ref(true)
+const collapsed = ref(false)
 
 const navItems = [
   { path: '/', icon: 'Monitor', label: '评测任务' },
